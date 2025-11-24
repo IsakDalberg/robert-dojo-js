@@ -1,6 +1,0 @@
-Flask
-flask-cors
-opencv-contrib-python
-opencv-python
-requests
-numpy

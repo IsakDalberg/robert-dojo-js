@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>R.O.B.E.R.T Dojo — Local Site</title>
+    <style>
+      body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding: 2rem; }
+      header { margin-bottom: 1.5rem }
+      .card { border: 1px solid #ddd; padding: 1rem; border-radius: 6px; max-width: 720px }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>R.O.B.E.R.T Dojo</h1>
+      <p>Simple local site served from this machine. Accessible from other devices on the same network.</p>
+    </header>
+
+    <main class="card">
+      <h2>Quick Links</h2>
+      <ul>
+        <li><a href="/">Home (this page)</a></li>
+        <li><a href="/status">Server status (JSON)</a></li>
+      </ul>
+
+      <h3>Notes</h3>
+      <p>Run the server with <code>node main.js</code>. If you need a different port, set the <code>PORT</code> environment variable before starting.</p>
+    </main>
+  </body>
+</html>

@@ -1,5 +1,5 @@
 
-# R.O.B.E.R.T Dojo
+# R.O.B.E.R.T Dojo - NODE JS fork
 Welcome to the **R.O.B.E.R.T Dojo**!  
 The Dojo is a training ground for tackling various challenges and games, guided by **R.O.B.E.R.T.** (Robotic Overlord Bent on Enslaving and Ruling Technology). Test your skills, compete in challenges, and explore new ways to interact with R.O.B.E.R.T.
 
@@ -96,3 +96,35 @@ Contributions are welcome! To add a new game server, create a new folder under `
 
 ## License
 This project is licensed under the GNU General Public License (GPL). See the `LICENSE` file for more details.
+
+---
+
+## Node.js Quickstart (Serve a site on your LAN)
+
+ - **Install dependencies:**
+
+    ```powershell
+    npm install
+    ```
+
+ - **Start the server:**
+
+    ```powershell
+    npm start
+    ```
+
+    The server binds to `0.0.0.0` so other devices on your local network can reach it.
+
+ - **Access from another device:** find this machine's local IP via `ipconfig` and open `http://<IP>:3000` in a browser. You can change the port by setting the `PORT` environment variable, for example in PowerShell:
+
+    ```powershell
+    $env:PORT = 8080; npm start
+    ```
+
+ - **Developer mode (auto-reload):**
+
+    ```powershell
+    npm run dev
+    ```
+
+This quickstart creates a minimal Express server (`main.js`) and a simple page in `public/index.html`.
