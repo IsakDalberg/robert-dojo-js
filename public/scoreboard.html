@@ -50,11 +50,23 @@
       async function updateScoreboard(){
         const res = await fetch('/api/players');
         const data = await res.json();
+        
+        // Auto-identify local player by IP if not already set
+        if (!localPlayerId && data.myPlayerId) {
+          localPlayerId = data.myPlayerId;
+          showStatus('Auto-identified as Player ' + data.players.find(p => p.id === data.myPlayerId)?.code, 'success');
+        }
+        
         const tbody = document.getElementById('playersTbody');
-        tbody.innerHTML = data.players.map(p => `
+        tbody.innerHTML = data.players.map(p => {
+          const canAttack = localPlayerId && p.id !== localPlayerId;
+          const canHeal = localPlayerId && p.id === localPlayerId;
+          const otherTeam = p.team === 'blue' ? 'red' : 'blue';
+          const hasFlag = data.flagHolder === p.id ? ' 🚩' : '';
+          return `
           <tr>
             <td class="rank">${p.number}</td>
-            <td>${escapeHtml(p.name)}</td>
+            <td>${escapeHtml(p.name)}${hasFlag}</td>
             <td class="ip-address">${escapeHtml(p.ip)}</td>
             <td><span class="team-badge ${p.team}">${p.team}</span></td>
             <td class="kills">${p.kills}</td>
@@ -64,11 +76,15 @@
               </div>
             </td>
             <td>
-              <button class="btn" onclick="attack('${p.id}')">Attack</button>
+              ${canAttack ? `<button class="btn" onclick="attack('${p.id}')">Attack</button>` : ''}
+              ${canHeal ? `<button class="btn" onclick="heal('${p.id}')">Heal</button>` : ''}
+              <button class="btn" onclick="changeTeam('${p.id}','${otherTeam}')">Move to ${otherTeam}</button>
+              ${canHeal ? `<button class="btn" onclick="obtainFlagPlayer('${p.id}')">Obtain Flag</button>` : ''}
+              ${canHeal ? `<button class="btn" onclick="captureFlagPlayer('${p.id}')">Capture Flag</button>` : ''}
               <button class="btn btn-danger" onclick="removePlayer('${p.id}')">Remove</button>
             </td>
-          </tr>
-        `).join('');
+          </tr>`;
+        }).join('');
 
         // update teams
         document.getElementById('blueCard').innerHTML = `<h2>Blue</h2><div class="flags">${data.teams.blue.flagsCaptured} flags</div>`;
@@ -91,7 +107,53 @@
 
       async function attack(targetId){
         if(!localPlayerId) return showStatus('Join first','error');
-        await fetch('/api/player/attack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({attackerId:localPlayerId,targetId,damage:20})});
+        try{
+          const res = await fetch('/api/player/attack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({attackerId:localPlayerId,targetId,damage:20})});
+          const data = await res.json();
+          if(!res.ok) throw new Error(data.error||'Attack failed');
+          showStatus(data.killed ? 'Target killed!':'Attack landed','success');
+        }catch(e){ showStatus(e.message,'error'); }
+        updateScoreboard();
+      }
+
+      async function heal(targetId){
+        if(!localPlayerId) return showStatus('Join first','error');
+        try{
+          const res = await fetch('/api/player/heal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({healerId:localPlayerId,targetId,amount:25})});
+          const data = await res.json();
+          if(!res.ok) throw new Error(data.error||'Heal failed');
+          showStatus('Healed','success');
+        }catch(e){ showStatus(e.message,'error'); }
+        updateScoreboard();
+      }
+
+      async function changeTeam(playerId, team){
+        try{
+          const res = await fetch('/api/player/changeTeam',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId,team})});
+          const data = await res.json();
+          if(!res.ok) throw new Error(data.error||'Change team failed');
+          showStatus('Team changed','success');
+        }catch(e){ showStatus(e.message,'error'); }
+        updateScoreboard();
+      }
+
+      async function obtainFlagPlayer(playerId){
+        try{
+          const res = await fetch('/api/flag/obtain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId})});
+          const data = await res.json();
+          if(!res.ok) throw new Error(data.error||'Obtain failed');
+          showStatus('Flag obtained','success');
+        }catch(e){ showStatus(e.message,'error'); }
+        updateScoreboard();
+      }
+
+      async function captureFlagPlayer(playerId){
+        try{
+          const res = await fetch('/api/flag/capture',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId})});
+          const data = await res.json();
+          if(!res.ok) throw new Error(data.error||'Capture failed');
+          showStatus('Flag captured','success');
+        }catch(e){ showStatus(e.message,'error'); }
         updateScoreboard();
       }
 

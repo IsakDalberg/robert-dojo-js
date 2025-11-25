@@ -57,8 +57,8 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
 .kills{color:#ff6b6b;font-weight:600}
 
 .health{display:flex;align-items:center;gap:0.5rem}
-.health-bar{width:100px;height:18px;background:#e0e0e0;border-radius:10px;overflow:hidden}
-.health-fill{height:100%;background:linear-gradient(90deg,#ff6b6b 0%,#ffd93d 50%,#6bcf7f 100%);transition:width 0.3s ease;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:600}
+.health-bar{width:120px;height:18px;background:rgba(0,0,0,0.25);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+.health-fill{height:100%;background:#2ecc71;transition:width 0.3s ease;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700}
 
 .status{text-align:center;color:var(--text);font-size:0.9rem;margin-top:1rem}
 .status.error{color:#ff6b6b}
@@ -74,7 +74,7 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
 pre{background:#071026;padding:1rem;border-radius:6px;overflow:auto;color:var(--text)}
 code{background:rgba(110,168,254,0.08);padding:0.1rem 0.3rem;border-radius:3px;color:var(--text)}
 
-.btn{padding:0.4rem 0.8rem;border-radius:4px;border:none;cursor:pointer}
+.btn{padding:0.3rem 0.6rem;border-radius:4px;border:none;cursor:pointer;font-size:0.85rem}
 .btn-danger{background:#ff6b6b;color:white}
 .btn-primary{background:var(--accent);color:white}
 

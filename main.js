@@ -26,7 +26,7 @@ function logEvent(message) {
 	const now = new Date();
 	const ts = now.toISOString();
 	const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-	const entry = { ts, message };
+	const entry = { ts, message, displayTs: dateStr };
 	events.push(entry);
 	// keep log bounded
 	if (events.length > 2000) events.shift();
@@ -49,6 +49,7 @@ function assignTeam() {
 
 // GET /api/players - list all players and team scores
 app.get('/api/players', (req, res) => {
+	const clientIp = getClientIP(req);
 	const playerList = Array.from(players.values()).map(p => ({
 		id: p.id,
 		number: p.number,
@@ -59,7 +60,9 @@ app.get('/api/players', (req, res) => {
 		health: p.health,
 		joinedAt: p.joinedAt
 	}));
-	res.json({ players: playerList, teams, flagHolder });
+	// Find player by client IP
+	const myPlayer = Array.from(players.values()).find(p => p.ip === clientIp) || null;
+	res.json({ players: playerList, teams, flagHolder, myPlayerId: myPlayer?.id || null });
 });
 
 // GET /api/events - return event log
@@ -182,6 +185,9 @@ app.post('/api/player/attack', (req, res) => {
 	if (!attackerId || !players.has(attackerId)) return res.status(404).json({ error: 'Attacker not found' });
 	if (!targetId || !players.has(targetId)) return res.status(404).json({ error: 'Target not found' });
 
+	// Prevent self-attack
+	if (attackerId === targetId) return res.status(400).json({ error: 'Cannot attack yourself' });
+
 	const attacker = players.get(attackerId);
 	const target = players.get(targetId);
 
@@ -194,13 +200,42 @@ app.post('/api/player/attack', (req, res) => {
 		killed = true;
 		// if target had the flag, drop it
 		if (flagHolder === targetId) flagHolder = null;
+		// respawn: reset target health to full
+		target.health = 100;
+		logEvent(`Respawn: ${target.name} (code ${target.code}) respawned with full health`);
 	}
 	// Log event
 	logEvent(`Attack: ${attacker.name} (code ${attacker.code}) attacked ${target.name} (code ${target.code}) for ${dmg} damage${killed ? ' and killed them' : ''}`);
 	if (killed) logEvent(`Kill: ${attacker.name} (code ${attacker.code}) killed ${target.name} (code ${target.code})`);
 
 	res.json({ attacker, target, killed, flagHolder });
-});
+	});
+
+	// POST /api/player/heal - heal a target (amount optional)
+	app.post('/api/player/heal', (req, res) => {
+		const { healerId, targetId, amount } = req.body;
+		const amt = typeof amount === 'number' ? Math.max(0, amount) : 20;
+
+		if (!targetId || !players.has(targetId)) return res.status(404).json({ error: 'Target not found' });
+		if (healerId && !players.has(healerId)) return res.status(404).json({ error: 'Healer not found' });
+
+		const target = players.get(targetId);
+		target.health = Math.max(0, Math.min(100, target.health + amt));
+		logEvent(`Heal: ${healerId ? players.get(healerId).name : 'System'} healed ${target.name} (code ${target.code}) by ${amt}`);
+		res.json({ target });
+	});
+
+	// POST /api/player/changeTeam - change a player's team
+	app.post('/api/player/changeTeam', (req, res) => {
+		const { playerId, team } = req.body;
+		if (!playerId || !players.has(playerId)) return res.status(404).json({ error: 'Player not found' });
+		if (!team || !teams[team]) return res.status(400).json({ error: 'Invalid team' });
+
+		const p = players.get(playerId);
+		p.team = team;
+		logEvent(`TeamChange: ${p.name} (code ${p.code}) moved to ${teams[team].name}`);
+		res.json({ player: p });
+	});
 
 // POST /api/player/leave - remove a player (legacy endpoint)
 app.post('/api/player/leave', (req, res) => {

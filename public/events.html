@@ -27,7 +27,7 @@
       const term = document.getElementById('term');
 
       function render() {
-        term.innerHTML = events.map(e => `<div class="line"><span class="ts">[${e.ts}]</span><span class="msg">${escapeHtml(e.message)}</span></div>`).join('');
+        term.innerHTML = events.map(e => `<div class="line"><span class="ts">[${e.displayTs || e.ts}]</span><span class="msg">${escapeHtml(e.message)}</span></div>`).join('');
         term.scrollTop = term.scrollHeight;
       }
 
@@ -49,7 +49,7 @@
       function clearView() { term.innerHTML = ''; }
 
       function downloadLog() {
-        const blob = new Blob([events.map(e => `[${e.ts}] ${e.message}`).join('\n')], { type: 'text/plain' });
+        const blob = new Blob([events.map(e => `[${e.displayTs || e.ts}] ${e.message}`).join('\n')], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'events.txt'; a.click();
         URL.revokeObjectURL(url);
