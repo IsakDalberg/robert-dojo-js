@@ -1,0 +1,14 @@
+{
+  "name": "robert-dojo-js",
+  "version": "1.0.0",
+  "description": "R.O.B.E.R.T Dojo - simple in-memory game server and admin UI",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

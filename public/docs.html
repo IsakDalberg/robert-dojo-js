@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Docs — R.O.B.E.R.T Dojo Server</title>
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <div id="nav-placeholder"></div>
+
+    <div class="main-wrap">
+      <div class="card">
+        <h1>R.O.B.E.R.T Dojo — Server Documentation</h1>
+        <p>This page documents how to talk to the local game server.</p>
+
+        <h2>Host & Port</h2>
+        <p>By default the server listens on port <strong>3000</strong>. If you run the server locally, access the pages at:</p>
+        <ul>
+          <li>Local machine: <code>http://localhost:3000/</code></li>
+          <li>Other devices on your LAN: find the host IPv4 address (run <code>ipconfig</code> on Windows) and open <code>http://&lt;HOST_IP&gt;:3000/</code></li>
+        </ul>
+
+        <h2>Important Pages</h2>
+        <ul>
+          <li><code>/scoreboard.html</code> — interactive scoreboard UI</li>
+          <li><code>/events.html</code> — terminal-style event log</li>
+          <li><code>/docs.html</code> — this page</li>
+          <li><code>/status</code> — quick JSON status</li>
+        </ul>
+
+        <h2>API Endpoints</h2>
+        <h3>GET /api/players</h3>
+        <p>Returns the list of players, current team scores, and the flag holder.</p>
+        <pre>{ "players": [...], "teams": {"blue": {...},"red": {...}}, "flagHolder": null|"playerId" }</pre>
+
+        <h3>POST /api/player/join</h3>
+        <p>Join the game using a numeric code between 0 and 99. Example request:</p>
+        <pre>POST /api/player/join
+Content-Type: application/json
+
+{ "code": 42 }</pre>
+
+        <h3>DELETE /api/player/:id</h3>
+        <p>Remove a player by server-assigned <code>playerId</code> (returned from join).</p>
+
+        <h3>POST /api/player/attack</h3>
+        <p>Attack another player:</p>
+        <pre>POST /api/player/attack
+Content-Type: application/json
+
+{ "attackerId": "<playerId>", "targetId": "<playerId>", "damage": 20 }</pre>
+
+        <h3>POST /api/flag/obtain</h3>
+        <p>Pick up (obtain/steal) the flag:</p>
+        <pre>POST /api/flag/obtain
+Content-Type: application/json
+
+{ "playerId": "<playerId>" }</pre>
+
+        <h3>POST /api/flag/capture</h3>
+        <p>Capture (deliver) the flag; only allowed if you currently hold it:</p>
+        <pre>POST /api/flag/capture
+Content-Type: application/json
+
+{ "playerId": "<playerId>" }</pre>
+
+        <h3>GET /api/events</h3>
+        <p>Returns a list of timestamped events for the terminal view.</p>
+
+        <h2>Example: join + obtain + capture (curl)</h2>
+        <pre># Join
+curl -X POST http://localhost:3000/api/player/join -H "Content-Type: application/json" -d "{ \"code\": 5 }"
+
+# Obtain flag
+curl -X POST http://localhost:3000/api/flag/obtain -H "Content-Type: application/json" -d "{ \"playerId\": \"<playerId-from-join>\" }"
+
+# Capture
+curl -X POST http://localhost:3000/api/flag/capture -H "Content-Type: application/json" -d "{ \"playerId\": \"<playerId>\" }"
+        </pre>
+
+        <h2>Notes</h2>
+        <ul>
+          <li>All data is stored in memory and resets when the server restarts.</li>
+          <li>By default the server binds to <code>0.0.0.0</code> so it is reachable from other devices on your network.</li>
+          <li>If other devices cannot connect, ensure Windows Firewall allows Node or the chosen port.</li>
+        </ul>
+      </div>
+</div>
+
+    <script src="/js/nav-inject.js"></script>
+</body>
+</html>

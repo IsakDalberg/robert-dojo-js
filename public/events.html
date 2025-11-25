@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Event Terminal — R.O.B.E.R.T Dojo</title>
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <div id="nav-placeholder"></div>
+
+    <div class="main-wrap">
+      <header>
+        <h1>Event Terminal</h1>
+        <p>Live event log for game actions. Polling every second.</p>
+      </header>
+      <div class="controls">
+        <button onclick="clearView()">Clear View</button>
+        <button onclick="downloadLog()">Download Log</button>
+      </div>
+      <div id="term" class="term"></div>
+    </div>
+
+    <script src="/js/nav-inject.js"></script>
+    <script>
+      let events = [];
+      const term = document.getElementById('term');
+
+      function render() {
+        term.innerHTML = events.map(e => `<div class="line"><span class="ts">[${e.ts}]</span><span class="msg">${escapeHtml(e.message)}</span></div>`).join('');
+        term.scrollTop = term.scrollHeight;
+      }
+
+      function escapeHtml(s) {
+        const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+      }
+
+      async function poll() {
+        try {
+          const res = await fetch('/api/events');
+          const data = await res.json();
+          events = data.events || [];
+          render();
+        } catch (err) {
+          console.error('Failed to fetch events', err);
+        }
+      }
+
+      function clearView() { term.innerHTML = ''; }
+
+      function downloadLog() {
+        const blob = new Blob([events.map(e => `[${e.ts}] ${e.message}`).join('\n')], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'events.txt'; a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      poll();
+      setInterval(poll, 1000);
+    </script>
+  </body>
+</html>

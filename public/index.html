@@ -4,27 +4,39 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>R.O.B.E.R.T Dojo — Local Site</title>
-    <style>
-      body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding: 2rem; }
-      header { margin-bottom: 1.5rem }
-      .card { border: 1px solid #ddd; padding: 1rem; border-radius: 6px; max-width: 720px }
-    </style>
+    <link rel="stylesheet" href="/css/styles.css">
   </head>
   <body>
-    <header>
-      <h1>R.O.B.E.R.T Dojo</h1>
-      <p>Simple local site served from this machine. Accessible from other devices on the same network.</p>
-    </header>
+    <div class="sidepanel">
+      <div class="brand">R.O.B.E.R.T Dojo</div>
+      <nav>
+        <a class="link active" href="/">Home</a>
+        <a class="link" href="/scoreboard.html">Scoreboard</a>
+        <a class="link" href="/events.html">Event Terminal</a>
+        <a class="link" href="/docs.html">API Docs</a>
+        <a class="link" href="/status">Status (JSON)</a>
+      </nav>
+    </div>
 
-    <main class="card">
-      <h2>Quick Links</h2>
-      <ul>
-        <li><a href="/">Home (this page)</a></li>
-        <li><a href="/status">Server status (JSON)</a></li>
-      </ul>
+    <div class="main-wrap">
+      <header>
+        <h1>R.O.B.E.R.T Dojo</h1>
+        <p>Simple local site served from this machine. Accessible from other devices on the same network.</p>
+      </header>
 
-      <h3>Notes</h3>
-      <p>Run the server with <code>node main.js</code>. If you need a different port, set the <code>PORT</code> environment variable before starting.</p>
-    </main>
+      <main class="card">
+        <h2>Quick Links</h2>
+        <ul>
+          <li><a href="/">Home (this page)</a></li>
+          <li><a href="/scoreboard.html"><strong>⚔️ Scoreboard</strong></a></li>
+          <li><a href="/events.html">Event Terminal</a></li>
+          <li><a href="/docs.html">API Docs</a></li>
+          <li><a href="/status">Server status (JSON)</a></li>
+        </ul>
+
+        <h3>Notes</h3>
+        <p>Run the server with <code>node main.js</code>. If you need a different port, set the <code>PORT</code> environment variable before starting.</p>
+      </main>
+    </div>
   </body>
 </html>

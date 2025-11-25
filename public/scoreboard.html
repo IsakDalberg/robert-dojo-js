@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scoreboard — R.O.B.E.R.T Dojo</title>
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <div id="nav-placeholder"></div>
+
+    <div class="main-wrap">
+      <div class="container">
+      <header>
+        <h1>Scoreboard</h1>
+        <p>Players, teams, flags and quick admin controls.</p>
+      </header>
+
+      <div class="controls">
+        <input id="codeInput" type="number" min="0" max="99" placeholder="Join code (0-99)" />
+        <button onclick="joinGame()" class="btn btn-primary">Join</button>
+        <button onclick="refresh()" class="btn">Refresh</button>
+        <button onclick="restartMatch()" class="btn btn-danger">Restart Match</button>
+      </div>
+
+      <div class="team-scores">
+        <div id="blueCard" class="team-card blue card"></div>
+        <div id="redCard" class="team-card red card"></div>
+      </div>
+
+      <div class="scoreboard card">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Player</th><th>IP</th><th>Team</th><th>Kills</th><th>Health</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="playersTbody"></tbody>
+        </table>
+      </div>
+
+      <div id="status" class="status"></div>
+      </div>
+    </div>
+
+    <script src="/js/nav-inject.js"></script>
+    <script>
+      let localPlayerId = null;
+
+      function escapeHtml(text){ const d=document.createElement('div'); d.textContent=text; return d.innerHTML; }
+
+      async function updateScoreboard(){
+        const res = await fetch('/api/players');
+        const data = await res.json();
+        const tbody = document.getElementById('playersTbody');
+        tbody.innerHTML = data.players.map(p => `
+          <tr>
+            <td class="rank">${p.number}</td>
+            <td>${escapeHtml(p.name)}</td>
+            <td class="ip-address">${escapeHtml(p.ip)}</td>
+            <td><span class="team-badge ${p.team}">${p.team}</span></td>
+            <td class="kills">${p.kills}</td>
+            <td>
+              <div class="health">
+                <div class="health-bar"><div class="health-fill" style="width:${p.health}%">${p.health}%</div></div>
+              </div>
+            </td>
+            <td>
+              <button class="btn" onclick="attack('${p.id}')">Attack</button>
+              <button class="btn btn-danger" onclick="removePlayer('${p.id}')">Remove</button>
+            </td>
+          </tr>
+        `).join('');
+
+        // update teams
+        document.getElementById('blueCard').innerHTML = `<h2>Blue</h2><div class="flags">${data.teams.blue.flagsCaptured} flags</div>`;
+        document.getElementById('redCard').innerHTML = `<h2>Red</h2><div class="flags">${data.teams.red.flagsCaptured} flags</div>`;
+      }
+
+      async function joinGame(){
+        const code = Number(document.getElementById('codeInput').value);
+        try{
+          const res = await fetch('/api/player/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error||'Join failed');
+          localPlayerId = data.playerId;
+          showStatus('Joined as '+escapeHtml(data.player.name),'success');
+          updateScoreboard();
+        }catch(e){ showStatus(e.message,'error'); }
+      }
+
+      function showStatus(msg,type){ const s=document.getElementById('status'); s.textContent=msg; s.className='status '+(type||''); }
+
+      async function attack(targetId){
+        if(!localPlayerId) return showStatus('Join first','error');
+        await fetch('/api/player/attack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({attackerId:localPlayerId,targetId,damage:20})});
+        updateScoreboard();
+      }
+
+      async function removePlayer(id){ await fetch('/api/player/'+encodeURIComponent(id),{method:'DELETE'}); updateScoreboard(); }
+
+      async function restartMatch(){
+        try{
+          const res = await fetch('/api/restart',{method:'POST'});
+          const data = await res.json();
+          if(!res.ok) throw new Error(data.error||'Restart failed');
+          showStatus('Match restarted!','success');
+          updateScoreboard();
+        }catch(e){ showStatus('Restart failed: '+e.message,'error'); }
+      }
+
+      function refresh(){ updateScoreboard(); }
+
+      // initial
+      updateScoreboard();
+      setInterval(updateScoreboard,1000);
+    </script>
+  </body>
+</html>
